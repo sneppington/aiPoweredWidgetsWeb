@@ -81,9 +81,6 @@ function getClientCoordinates() {
   });
 }
 
-let lat, long
-
-
 export default function weatherWidget() {
     getClientCoordinates().then((coords) => {
         getWeather(coords.latitude, coords.longitude).then((weather) =>{

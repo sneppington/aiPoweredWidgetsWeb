@@ -53,12 +53,12 @@ function celsiusToFahrenheit(celsius: number): number {
     return (celsius * 9/5) + 32;
 }
 
-export default function temperatureWidget() {
+export default function TemperatureWidget() {
     const tempWidget = useRef<HTMLDivElement>(null)
 
     getClientCoordinates().then((coords) => {
         getWeather(coords.latitude, coords.longitude).then((weather) =>{
-            let thermometerHeight = Math.floor(6 * weather.temperature / 45)
+            const thermometerHeight = Math.floor(6 * weather.temperature / 45)
 
             tempWidget.current.querySelector(".thermometer-inner-bar").style.height = `${thermometerHeight + 3}0%`
 

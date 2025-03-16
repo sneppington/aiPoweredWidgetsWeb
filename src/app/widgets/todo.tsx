@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 
-export default function todoList({ mode }) {
+export default function TodoList({ mode }) {
     const todoWidget = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
