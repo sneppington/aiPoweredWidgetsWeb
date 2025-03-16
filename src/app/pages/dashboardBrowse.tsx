@@ -1,9 +1,5 @@
 "use client";
 
-import { match } from "assert";
-import Image from "next/image";
-import Link from 'next/link';
-import { Node } from "postcss";
 import { useEffect } from "react";
 
 import DashboardCard from "../components/dashboardCard";
