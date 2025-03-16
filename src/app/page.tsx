@@ -8,12 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import DashboardBrowse from "./pages/dashboardBrowse"
 import Home from "./pages/home"
 
-// Widgets
-import WeatherWidget from "./widgets/weather";
-import TemperatureWidget from "./widgets/temperature";
-import TodoList from "./widgets/todo";
-
-export default function index() {
+export default function Index() {
   const [page, setPage] = useState("dashboardBrowse")
   const pageRef = useRef(page)
 
