@@ -49,22 +49,12 @@ export default function Dashboard() {
     return `#${r}${g}${b}`;
   }
 
-  function hexToRgb(hex) {
-    hex = hex.replace(/^#/, "");
-    if (hex.length === 3) {
-      hex = hex.split("").map((c) => c + c).join("");
-    }
-    const bigint = parseInt(hex, 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-
   useEffect(() => {
     const bgShapesWrapper = document.querySelector("#background-shapes-wrapper");
     bgShapesWrapper.innerHTML = "";
     const initialShades = generateShadesFromRgb(colorTheme, 15);
+
+    const editButton = document.querySelector("#edit-button")
 
     for (let i = 0; i < 10; i++) {
       const shape = document.createElement("div");
@@ -101,6 +91,19 @@ export default function Dashboard() {
       pfpOptions.style.pointerEvents = "all";
       document.addEventListener("click", userUIClickOutDetector);
     });
+
+    let editing = false
+    editButton.addEventListener("click", () => {
+      editing = !editing
+      if (editing) {
+        document.querySelector("#edit-ui").style.setProperty("transform", "translateX(-10px)")
+        document.querySelector("#dashboard-widgets").style.setProperty("width", "calc(100vw - 300px)")
+      } else {
+        document.querySelector("#edit-ui").style.setProperty("transform", "")
+        document.querySelector("#dashboard-widgets").style.setProperty("width", "")
+      }
+    })
+    
   }, []);
 
   useEffect(() => {
