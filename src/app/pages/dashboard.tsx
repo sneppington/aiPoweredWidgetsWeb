@@ -60,19 +60,6 @@ export default function Dashboard() {
     return `#${r}${g}${b}`;
   }
 
-  // Helper: Convert a hex string to an rgb string.
-  function hexToRgb(hex: string): string {
-    hex = hex.replace(/^#/, "");
-    if (hex.length === 3) {
-      hex = hex.split("").map((c) => c + c).join("");
-    }
-    const bigint = parseInt(hex, 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-
   // ------------------------------------------------------------------------------------------------
   // One-time DOM setup: Create some background shapes and register UI event listeners.
   useEffect(() => {
