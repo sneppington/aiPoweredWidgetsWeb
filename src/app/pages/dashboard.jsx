@@ -117,12 +117,6 @@ export default function Dashboard() {
       shape.style.backgroundColor = shades[randi(shades.length)];
     });
   }, [colorTheme]);
-
-  const handleColorChange = (event) => {
-    const hexColor = event.target.value;
-    const rgbColor = hexToRgb(hexColor);
-    setColorTheme(rgbColor);
-  };
   
   return (
     <>
