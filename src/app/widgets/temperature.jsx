@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 
 export default function TemperatureWidget() {
   const tempWidget = useRef(null);
-  const [temperature, setTemperature] = useState(null);
+  const [temperature, setTemperature] = useState(0);
   const [loading, setLoading] = useState(true);
 
   // Function to convert Celsius to Fahrenheit
@@ -60,8 +60,7 @@ export default function TemperatureWidget() {
               const thermometerInnerBar = tempWidget.current.querySelector(".thermometer-inner-bar");
               thermometerInnerBar.style.height = `${thermometerHeight + 3}0%`;
 
-              tempWidget.current.querySelector(".celcius").textContent = `${weather.temperature} ºC`;
-              tempWidget.current.querySelector(".fahrenheit").textContent = `${Math.floor(celsiusToFahrenheit(weather.temperature))} ºF`;
+              setTemperature(weather.temperature)
             }
 
             setLoading(false);
@@ -85,14 +84,8 @@ export default function TemperatureWidget() {
           <div className="thermometer-inner-bottom"></div>
         </div>
         <div className="temps">
-          {loading ? (
-            <h1>Loading...</h1>
-          ) : (
-            <>
-              <h1 className="celcius">{temperature} ºC</h1>
-              <h1 className="fahrenheit">{Math.floor(celsiusToFahrenheit(temperature))} ºF</h1>
-            </>
-          )}
+          <h1 className="celcius">{temperature} ºC</h1>
+          <h1 className="fahrenheit">{Math.floor(celsiusToFahrenheit(temperature))} ºF</h1>
         </div>
       </div>
     </div>

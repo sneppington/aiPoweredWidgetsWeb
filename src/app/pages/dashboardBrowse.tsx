@@ -124,7 +124,7 @@ export default function DashboardBrowse() {
         document.addEventListener("click", userUIClickOutDetector);
     });    
     
-  }, [colorTheme, darkerShade, shades])
+  }, [])
 
   return (
     <>
