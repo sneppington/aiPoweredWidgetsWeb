@@ -201,11 +201,6 @@ export default function Dashboard() {
 
   // ------------------------------------------------------------------------------------------------
   // When the user selects a new color from the input, convert it to RGB and update the state.
-  const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const hexColor = event.target.value; // e.g., "#ff0000"
-    const rgbColor = hexToRgb(hexColor);
-    setColorTheme(rgbColor);
-  };
 
   // ------------------------------------------------------------------------------------------------
   // Render the dashboard UI.
