@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import DashboardCard from "../components/dashboardCard";
 
@@ -45,7 +45,7 @@ export default function DashboardBrowse() {
     return `rgb(${r}, ${g}, ${b})`;
   }
 
-  let colors = [
+  const colors = [
     "rgb(70, 130, 180)", // Steel Blue
     "rgb(255, 196, 0)",  // Gold
     "rgb(147, 112, 219)", // Medium Purple
@@ -55,9 +55,11 @@ export default function DashboardBrowse() {
     "rgb(0, 206, 209)"   // Dark Turquoise
   ]
 
-  let colorTheme = colors[randi(7)]
-  let shades = generateShadesFromRgb(colorTheme, 15)
-  let darkerShade = darkenColor(colorTheme)
+  const colorTheme = useMemo(() => {
+    return colors[randi(7)];
+  }, []);
+  const shades = useMemo(() => generateShadesFromRgb(colorTheme, 15), [colorTheme]);
+  const darkerShade = useMemo(() => darkenColor(colorTheme), [colorTheme]);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--colorTheme', colorTheme) // Setting the theme color
@@ -77,7 +79,7 @@ export default function DashboardBrowse() {
     const bgShapesWrapper: HTMLElement = document.querySelector("#background-shapes-wrapper")!
 
     function addRandomShape() {
-      let shape = document.createElement("div");
+      const shape = document.createElement("div");
 
       shape.style.backgroundColor = "white"
       shape.style.transition = "background-color cubic-bezier(0.075, 0.82, 0.165, 1) 1s"
@@ -106,23 +108,23 @@ export default function DashboardBrowse() {
     
     // User profile UI
 
-    let pfp = document.querySelector("#profile-picture")
-    let pfpOptions = document.querySelector("#profile-options")
-
-    let userUIClickOutDetector = (event) => {
-        if (pfp?.contains(event.target)) {
-          return
+    const pfp = document.querySelector("#profile-picture") as HTMLElement | null;
+    const pfpOptions = document.querySelector("#profile-options") as HTMLElement | null;
+    
+    const userUIClickOutDetector = (event: MouseEvent) => {
+        if (pfp?.contains(event.target as Node)) {
+            return;
         }
-        pfpOptions.style.opacity = 0
-        document.removeEventListener("click", userUIClickOutDetector)
-    }
-
-    pfp.addEventListener("click", () => {
-      pfpOptions.style.opacity = 1
-      document.addEventListener("click", userUIClickOutDetector)
-    })
-
-  }, [])
+        pfpOptions?.style.setProperty("opacity", "0");
+        document.removeEventListener("click", userUIClickOutDetector);
+    };
+    
+    pfp?.addEventListener("click", () => {
+        pfpOptions?.style.setProperty("opacity", "1");
+        document.addEventListener("click", userUIClickOutDetector);
+    });    
+    
+  }, [colorTheme, darkerShade, shades])
 
   return (
     <>
