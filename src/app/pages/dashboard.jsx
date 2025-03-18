@@ -5,14 +5,18 @@ import WeatherWidget from "../widgets/weather";
 import TemperatureWidget from "../widgets/temperature";
 import TodoList from "../widgets/todo";
 
+// Dashboard component makes various UI elements react to the theme color.
 export default function Dashboard() {
+  // Store the selected theme as an RGB string.
   const [colorTheme, setColorTheme] = useState("rgb(255, 196, 0)");
   const [backgroundBlur, setBackgroundBlur] = useState(100);
 
+  // Helper: Generate a random integer between 0 and options - 1.
   function randi(options) {
     return Math.floor(Math.random() * options);
   }
 
+  // Helper: Create an array of shades from a given rgb string.
   function generateShadesFromRgb(rgb, numberOfShades) {
     const shades = [];
     const [r, g, b] = parseRgbString(rgb);
@@ -24,11 +28,13 @@ export default function Dashboard() {
     return shades;
   }
 
+  // Helper: Parses an "rgb(...)" string into its numeric components.
   function parseRgbString(rgb) {
     const result = rgb.match(/\d+/g);
     return result ? result.map(Number) : [0, 0, 0];
   }
 
+  // Helper: Darken an rgb color by reducing each component by 20%.
   function darkenColor(rgbColor) {
     const rgb = rgbColor.match(/\d+/g);
     if (!rgb) throw new Error("Invalid RGB color format");
@@ -42,6 +48,7 @@ export default function Dashboard() {
     return `rgb(${r}, ${g}, ${b})`;
   }
 
+  // Helper: Convert an rgb string to a hex string (for the color input).
   function rgbToHex(rgb) {
     const result = rgb.match(/\d+/g);
     if (!result) return "#000000";
@@ -49,12 +56,26 @@ export default function Dashboard() {
     return `#${r}${g}${b}`;
   }
 
+  // Helper: Convert a hex string to an rgb string.
+  function hexToRgb(hex) {
+    hex = hex.replace(/^#/, "");
+    if (hex.length === 3) {
+      hex = hex.split("").map((c) => c + c).join("");
+    }
+    const bigint = parseInt(hex, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  // ------------------------------------------------------------------------------------------------
+  // One-time DOM setup: Create some background shapes and register UI event listeners.
   useEffect(() => {
+    // (1) Background Shapes – add 10 shapes at random positions.
     const bgShapesWrapper = document.querySelector("#background-shapes-wrapper");
     bgShapesWrapper.innerHTML = "";
     const initialShades = generateShadesFromRgb(colorTheme, 15);
-
-    const editButton = document.querySelector("#edit-button")
 
     for (let i = 0; i < 10; i++) {
       const shape = document.createElement("div");
@@ -76,6 +97,7 @@ export default function Dashboard() {
       shape.style.backgroundColor = initialShades[randi(initialShades.length)];
     }
 
+    // (2) Profile UI: Show/hide profile options on the profile picture click.
     const pfp = document.querySelector("#profile-picture");
     const pfpOptions = document.querySelector("#profile-options");
 
@@ -92,20 +114,54 @@ export default function Dashboard() {
       document.addEventListener("click", userUIClickOutDetector);
     });
 
-    let editing = false
-    editButton.addEventListener("click", () => {
-      editing = !editing
+    // (3) Edit UI Logic: Toggle an editing mode that shifts some UI elements.
+    let editing = false;
+    let hasBG = false;
+    const editButton = document.querySelector("#edit-button");
+    const editUIWrapper = document.querySelector("#edit-ui");
+    const widgetWrapper = document.querySelector("#dashboard-widgets");
+
+    const uploadBackgroundButton = document.querySelector("#background-image-uploader");
+    const uploadBackgroundText = document.querySelector("#background-image-uploader-label");
+
+    editButton?.addEventListener("click", () => {
+      editing = !editing;
       if (editing) {
-        document.querySelector("#edit-ui").style.setProperty("transform", "translateX(-10px)")
-        document.querySelector("#dashboard-widgets").style.setProperty("width", "calc(100vw - 300px)")
+        editUIWrapper.style.transform = "translateX(-10px)";
+        widgetWrapper.style.width = "calc(100vw - 300px)";
       } else {
-        document.querySelector("#edit-ui").style.setProperty("transform", "")
-        document.querySelector("#dashboard-widgets").style.setProperty("width", "")
+        editUIWrapper.style.transform = "";
+        widgetWrapper.style.width = "";
       }
-    })
-    
+    });
+
+    uploadBackgroundButton?.addEventListener("change", (e) => {
+      const target = e.target;
+      const file = target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          document.querySelector(".background-filter").style.backgroundImage = `url(${event.target.result})`;
+          hasBG = true;
+          uploadBackgroundText.textContent = "Remove Background";
+        };
+        reader.readAsDataURL(file);
+      }
+      target.value = "";
+    });
+
+    uploadBackgroundButton?.addEventListener("click", (e) => {
+      if (hasBG) {
+        e.preventDefault();
+        document.querySelector(".background-filter").style.backgroundImage = "";
+        uploadBackgroundText.textContent = "Background Image";
+        hasBG = false;
+      }
+    });
   }, []);
 
+  // ------------------------------------------------------------------------------------------------
+  // Whenever the theme color changes, update all affected UI parts.
   useEffect(() => {
     const shades = generateShadesFromRgb(colorTheme, 15);
     const darkerShade = darkenColor(colorTheme);
@@ -120,7 +176,17 @@ export default function Dashboard() {
       shape.style.backgroundColor = shades[randi(shades.length)];
     });
   }, [colorTheme]);
-  
+
+  // ------------------------------------------------------------------------------------------------
+  // When the user selects a new color from the input, convert it to RGB and update the state.
+  const handleColorChange = (event) => {
+    const hexColor = event.target.value;
+    const rgbColor = hexToRgb(hexColor);
+    setColorTheme(rgbColor);
+  };
+
+  // ------------------------------------------------------------------------------------------------
+  // Render the dashboard UI.
   return (
     <>
       <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet"></link>
