@@ -44,6 +44,29 @@ export default function TodoList({ mode }) {
         </div>
       );
     default:
-      return null;
+      return (
+        <div ref={todoWidget} className="widget-wrapper">
+          <div className="background-blur-widget" />
+          <div className="content-todo">
+            <h1 className="todo-title">
+              To <span className="color-theme">Do</span>
+            </h1>
+            <ul className="todo-list">
+              <li className="todo-element" style={{ marginTop: "5px" }}>
+                Register
+                <div className="todo-element-cross"></div>
+              </li>
+              <li className="todo-element">
+                Create Dashboard
+                <div className="todo-element-cross"></div>
+              </li>
+              <li className="todo-element">
+                Enjoy
+                <div className="todo-element-cross"></div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      );
   }
 }

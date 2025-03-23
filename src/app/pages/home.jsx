@@ -191,9 +191,6 @@ export default function Home() {
                   </div>
                 </main>
                 <aside id="widget-showoff-wrapper">
-                  <WeatherWidget/>
-                  <TemperatureWidget/>
-                  <TodoList mode={ "showoff" }/>
                 </aside>
               </div>
             </div>

@@ -1,5 +1,8 @@
 "use client";
 
+import React from 'react';
+import ReactDOM from 'react-dom/client'; // Correct for React 18
+
 import { useState, useEffect } from "react";
 import WeatherWidget from "../widgets/weather";
 import TemperatureWidget from "../widgets/temperature";
@@ -158,7 +161,94 @@ export default function Dashboard() {
         hasBG = false;
       }
     });
+
+    // Adding widgets
+    let hoverWidget
+    let loadedWidget
+    let loadedWidgetNode
+    let loadedWidgetPlacementRef
+    let loadedWidgetPlaced = false
+    let mouseMoveConnection
+
+    const widgetRootNode = document.querySelector("#dashboard-widgets")
+    const widgetRoot = ReactDOM.createRoot(widgetRootNode)
+    const widgetValueSwitch = {
+      "WeatherWidget": WeatherWidget,
+      "TemperatureWidget": TemperatureWidget,
+      "TodoList": TodoList
+    }
+    
+    let widgetsOnRender = []
+    let widgetOnRenderNode = []
+    widgetRoot.render(
+      <React.Fragment>
+        {widgetsOnRender}
+      </React.Fragment>
+    )
+
+    document.querySelectorAll(".widget-selector-widget").forEach((widget) => {
+      let m1ButtonDown = (e) => {
+        const selectedWidgetRef = widgetValueSwitch[widget.getAttribute("data-value")]
+        loadedWidget = React.createElement(selectedWidgetRef)
+        //loadedWidgetNode.style.setProperty("opacity", "0.8")
+        widgetsOnRender.push(loadedWidget)
+        widgetRoot.render(
+          <React.Fragment>
+            {widgetsOnRender}
+          </React.Fragment>
+        )
+        requestAnimationFrame(() => {
+          loadedWidgetNode = widgetRootNode.querySelectorAll(".widget-wrapper")[widgetsOnRender.length - 1]
+          loadedWidgetNode.style.setProperty("opacity", "0.3")
+          loadedWidgetNode.style.setProperty("order", toString(widgetsOnRender.length - 1))
+        })
+
+        hoverWidget = widget.cloneNode(true)
+        document.body.appendChild(hoverWidget)
+    
+        hoverWidget.style.setProperty("position", "absolute")
+        hoverWidget.style.setProperty("pointer-events", "none")
+        hoverWidget.style.setProperty("z-index", "1000")
+    
+        mouseMoveConnection = (event) => {
+          hoverWidget.style.setProperty("left", `${ event.pageX - 20 }px`)
+          hoverWidget.style.setProperty("top", `${ event.pageY - 10 }px`)
+        }
+        document.addEventListener("mousemove", mouseMoveConnection)
+      }
+    
+      let m1ButtonUp = () => {
+        if (hoverWidget) {
+          // Insert widget on nodelist and fix the css order tag
+          if (!loadedWidgetPlacementRef) {
+            widgetOnRenderNode.push(loadedWidgetNode)
+          } else {
+            let index = loadedWidgetNode.index(loadedWidgetPlacementRef)
+            loadedWidgetNode = array.splice(index, 0, loadedWidgetNode)
+          }
+
+          for (let i = 0; i < loadedWidgetNode.length; i++) {
+            loadedWidgetNode[i].style.setProperty("order", 2*i)
+          }
+
+          document.removeEventListener("mousemove", mouseMoveConnection)
+          loadedWidgetNode.style.setProperty("opacity", "1")
+          hoverWidget.remove()
+          hoverWidget = null
+          loadedWidgetNode = null
+          loadedWidgetPlacementRef = null
+        }
+      }
+    
+      widget.addEventListener("mousedown", m1ButtonDown)
+      document.addEventListener("mouseup", m1ButtonUp)
+    })    
+
   }, []);
+
+  useEffect(() => {
+
+  }, [])
 
   // ------------------------------------------------------------------------------------------------
   // Whenever the theme color changes, update all affected UI parts.
@@ -222,48 +312,50 @@ export default function Dashboard() {
             <button id="edit-button">edit</button>
         </div>
         <div id="dashboard-widgets">
-          <WeatherWidget/>
-          <TemperatureWidget/>
-          <TodoList mode={ "showoff" }/>
         </div>
         <div id="edit-ui">
-            <div id="color-theme-selector">
-                <h1>Theme Selector</h1>
-                <input type="color" name="colorPicker" value={ rgbToHex(colorTheme) }
-                onChange={(e) => {
-                  const hex = e.target.value // Get hex color from input
-                  const rgb = hex.replace(/^#/, '').match(/.{2}/g)?.map(x => parseInt(x, 16)) || [];
-                  const newColorTheme = `rgb(${rgb.join(",")})` // Convert to RGB format
-                  setColorTheme(newColorTheme)
-
-                }}
-                />
+          <div id="edit-ui-background"/>
+          <div id="color-theme-selector">
+              <h1>Theme Selector</h1>
+              <input type="color" name="colorPicker" value={ rgbToHex(colorTheme) }
+              onChange={(e) => {
+                const hex = e.target.value // Get hex color from input
+                const rgb = hex.replace(/^#/, '').match(/.{2}/g)?.map(x => parseInt(x, 16)) || [];
+                const newColorTheme = `rgb(${rgb.join(",")})` // Convert to RGB format
+                setColorTheme(newColorTheme)
+              }}
+              />
+          </div>
+          <div id="background-selector">
+            <div id="blur-selector">
+              <h1>Blur</h1>
+              <input type="range" id="blur-slider" name="slider" min="0" max="300" step="1" value={backgroundBlur} onChange={(e) => {
+                setBackgroundBlur(e.target.value)
+                document.querySelector(".background-filter").style.setProperty("backdrop-filter", `blur(${e.target.value}px)`)
+                document.querySelector(".background-filter").style.setProperty("filter", `blur(${e.target.value}px)`)
+              }}/>
             </div>
-            <div id="background-selector">
-              <div id="blur-selector">
-                <h1>Blur</h1>
-                <input type="range" id="blur-slider" name="slider" min="0" max="300" step="1" value={backgroundBlur} onChange={(e) => {
-                  setBackgroundBlur(e.target.value)
-                  document.querySelector(".background-filter").style.setProperty("backdrop-filter", `blur(${e.target.value}px)`)
-                  document.querySelector(".background-filter").style.setProperty("filter", `blur(${e.target.value}px)`)
-                }}/>
-              </div>
-              <div id="background-image-selector">
-                <label id="background-image-uploader-label" htmlFor="background-image-uploader">Background Image</label>
-                <input type="file" id="background-image-uploader" name="imageInput" accept="image/*" style={{ display: "none" }}/>
+            <div id="background-image-selector">
+              <label id="background-image-uploader-label" htmlFor="background-image-uploader">Background Image</label>
+              <input type="file" id="background-image-uploader" name="imageInput" accept="image/*" style={{ display: "none" }}/>
 
-                <select id="background-image-sizing-selector" name="dropdown" onChange={(e) => {
-                  document.querySelector(".background-filter").style.setProperty("background-size", e.target.value)
-                  console.log(e.target.value)
-                }}>
-                    <option value="cover">Cover</option>
-                    <option value="auto">Mosaic</option>
-                </select>
-              </div>
+              <select id="background-image-sizing-selector" name="dropdown" onChange={(e) => {
+                document.querySelector(".background-filter").style.setProperty("background-size", e.target.value)
+                console.log(e.target.value)
+              }}>
+                  <option value="cover">Cover</option>
+                  <option value="auto">Mosaic</option>
+              </select>
             </div>
-            <div id="widget-selector"></div>
+          </div>
+          <div id="widget-selector">
+            <div className="widget-selector-widget" data-value="WeatherWidget">Weather</div>
+            <div className="widget-selector-widget" data-value="TemperatureWidget">Temperature</div>
+            <div className="widget-selector-widget" data-value="TodoList">To Do List</div>
+          </div>
         </div>
       </main>
+      <div id="react-element-buffer" style={{ position: "absolute", display: "none" }}></div>
     </>
     );
 } 
