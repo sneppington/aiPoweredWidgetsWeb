@@ -796,6 +796,7 @@ form input:focus {
   align-content: start;
   flex-wrap: wrap;
   gap: 10px;
+  overflow-y: scroll;
   transition: width cubic-bezier(0.075, 0.82, 0.165, 1) 0.5s;
 }
 
