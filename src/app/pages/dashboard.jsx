@@ -166,7 +166,7 @@ export default function Dashboard() {
     let hoverWidget
     let loadedWidget
     let loadedWidgetNode
-    let loadedWidgetPlacementRef
+    let loadedWidgetPlacementRef = [] // [node, left or right]
     let loadedWidgetPlaced = false
     let mouseMoveConnection
 
@@ -190,7 +190,7 @@ export default function Dashboard() {
       let m1ButtonDown = (e) => {
         const selectedWidgetRef = widgetValueSwitch[widget.getAttribute("data-value")]
         loadedWidget = React.createElement(selectedWidgetRef)
-        //loadedWidgetNode.style.setProperty("opacity", "0.8")
+
         widgetsOnRender.push(loadedWidget)
         widgetRoot.render(
           <React.Fragment>
@@ -200,8 +200,10 @@ export default function Dashboard() {
         requestAnimationFrame(() => {
           loadedWidgetNode = widgetRootNode.querySelectorAll(".widget-wrapper")[widgetsOnRender.length - 1]
           loadedWidgetNode.style.setProperty("opacity", "0.3")
-          loadedWidgetNode.style.setProperty("order", toString(widgetsOnRender.length - 1))
+          loadedWidgetNode.style.setProperty("order", (widgetsOnRender.length - 1).toString())
         })
+
+        // Setting up HOVERWIDGET //
 
         hoverWidget = widget.cloneNode(true)
         document.body.appendChild(hoverWidget)
@@ -209,26 +211,52 @@ export default function Dashboard() {
         hoverWidget.style.setProperty("position", "absolute")
         hoverWidget.style.setProperty("pointer-events", "none")
         hoverWidget.style.setProperty("z-index", "1000")
+        hoverWidget.style.setProperty("mouse-events", "none")
     
-        mouseMoveConnection = (event) => {
+        mouseMoveConnection = (event) => { // Make widget hover to your mouse
           hoverWidget.style.setProperty("left", `${ event.pageX - 20 }px`)
           hoverWidget.style.setProperty("top", `${ event.pageY - 10 }px`)
         }
         document.addEventListener("mousemove", mouseMoveConnection)
+
+        // End of HOVERWIDGET //
       }
     
       let m1ButtonUp = () => {
         if (hoverWidget) {
-          // Insert widget on nodelist and fix the css order tag
+          // Add connection to widget for placement of next widgets
+
+          const loadedWidgetNoChange = loadedWidgetNode // Loaded widget to const so that the func has a ref to its own node even if loadedWidgetNode changes
+          loadedWidgetNode.addEventListener("mouseover", (event) => {
+            console.log("mrow")
+            loadedWidgetPlacementRef = [loadedWidgetNoChange, 1]
+        
+            if (loadedWidgetNode) {
+                const rect = loadedWidgetNoChange.getBoundingClientRect()
+                const midpoint = rect.left + rect.width / 2
+
+                if (event.clientX < midpoint) { // Check if it is on the left => change 1 to -1
+                  loadedWidgetPlacementRef[1] = -1
+                }
+
+                loadedWidgetNode.style.setProperty(
+                  "order",  
+                  (parseInt(loadedWidgetNoChange.style.order) + loadedWidgetPlacementRef[1]).toString()
+                )
+            }
+          })
+
+          // Insert widget on nodelist and fix the css order tag // ORDERING NODES
           if (!loadedWidgetPlacementRef) {
             widgetOnRenderNode.push(loadedWidgetNode)
           } else {
-            let index = loadedWidgetNode.index(loadedWidgetPlacementRef)
-            loadedWidgetNode = array.splice(index, 0, loadedWidgetNode)
+            let index = widgetOnRenderNode.indexOf(loadedWidgetPlacementRef[0]) + (loadedWidgetPlacementRef[1] == -1 ? 0 : 1)
+            widgetOnRenderNode.splice(index, 0, loadedWidgetNode)
           }
 
-          for (let i = 0; i < loadedWidgetNode.length; i++) {
-            loadedWidgetNode[i].style.setProperty("order", 2*i)
+          for (let i = 0; i < widgetOnRenderNode.length; i++) {
+            widgetOnRenderNode[i].style.setProperty("order", (2 * i).toString())
+            console.log(widgetOnRenderNode[i].style.order)
           }
 
           document.removeEventListener("mousemove", mouseMoveConnection)
