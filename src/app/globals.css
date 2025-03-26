@@ -58,6 +58,14 @@ body {
   overflow: hidden;
 }
 
+button {
+  transition: scale cubic-bezier(0.075, 0.82, 0.165, 1) .4s !important;
+}
+
+button:active {
+  scale: .9;
+}
+
 .wrapper {
   height: fit-content;
   width: fit-content;
@@ -179,11 +187,11 @@ body {
   border-radius: 3px;
   font-weight: bolder;
   box-shadow: inset 0 0 30px var(--colorTheme);
-  transition: transform cubic-bezier(0.075, 0.82, 0.165, 1) 0.7s;
+  transition: color cubic-bezier(0.075, 0.82, 0.165, 1) 0.7s;
 }
 
 #manage-dashboard-buttons button:hover {
-  transform: translateX(10px);
+  color: var(--colorTheme);
 }
 
 .login-button {
@@ -970,4 +978,37 @@ input[type="color"]:hover {
   -webkit-user-select: none; /* For WebKit-based browsers */
   -moz-user-select: none; /* For Firefox */
   -ms-user-select: none; /* For older versions of Internet Explorer */
+}
+
+#trashcan-destroy-widgets {
+  height: 80px;
+  width: 100%;
+  background-color: rgba(255, 13, 0, 0.295);
+  box-shadow: inset 0 0 50px rgb(255, 43, 40), 0 0 5px rgba(0, 0, 0, 0.364);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#trashcan-destroy-widgets svg {
+  animation: tilt 2s ease-in-out infinite;
+}
+
+@keyframes tilt {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+  75% {
+    transform: rotate(10deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
