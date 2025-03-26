@@ -162,13 +162,28 @@ body {
   transition: color cubic-bezier(0.075, 0.82, 0.165, 1) 1s;
 }
 
-#nav-buttons {
-  height: 100%;
+#manage-dashboard-buttons {
+  z-index: 10;
   display: flex;
   align-items: center;
+  flex-direction: column;
   gap: 10px;
-  margin: 10px;
-  transform: translateY(4px);
+  margin: 5px;
+  position: absolute;
+  bottom: 0;
+}
+
+#manage-dashboard-buttons button {
+  width: 60px;
+  padding: 10px;
+  border-radius: 3px;
+  font-weight: bolder;
+  box-shadow: inset 0 0 30px var(--colorTheme);
+  transition: transform cubic-bezier(0.075, 0.82, 0.165, 1) 0.7s;
+}
+
+#manage-dashboard-buttons button:hover {
+  transform: translateX(10px);
 }
 
 .login-button {
@@ -790,12 +805,13 @@ form input:focus {
 #dashboard-widgets {
   height: 100%;
   width: 100vw;
-  padding: 30px;
+  padding: 70px;
+  padding-top: 30px;
   flex: 1;
   display: flex;
   align-content: start;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px;
   overflow-y: scroll;
   transition: width cubic-bezier(0.075, 0.82, 0.165, 1) 0.5s;
 }
