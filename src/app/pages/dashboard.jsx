@@ -227,8 +227,9 @@ export default function Dashboard() {
           // Add connection to widget for placement of next widgets
 
           const loadedWidgetNoChange = loadedWidgetNode // Loaded widget to const so that the func has a ref to its own node even if loadedWidgetNode changes
-          loadedWidgetNode.addEventListener("mouseover", (event) => {
-            console.log("mrow")
+          loadedWidgetNoChange.addEventListener("mouseover", (event) => {
+            if ( loadedWidgetNode === loadedWidgetNoChange ) { return }
+
             loadedWidgetPlacementRef = [loadedWidgetNoChange, 1]
         
             if (loadedWidgetNode) {
@@ -244,27 +245,48 @@ export default function Dashboard() {
                   (parseInt(loadedWidgetNoChange.style.order) + loadedWidgetPlacementRef[1]).toString()
                 )
             }
+
+
+            // Moving already placed widget
+            let moving = false
+
+            loadedWidgetNoChange.addEventListener("mousedown", () => {
+              loadedWidgetNode = loadedWidgetNoChange
+
+              loadedWidgetNoChange.style.setProperty("opacity", "0.3")
+              moving = true
+            })
+
+            document.addEventListener("mouseup", () => {
+              if ( !moving ) { return }
+
+              loadedWidgetNoChange.style.setProperty("opacity", "1")
+
+              moving = false
+              loadedWidgetNode = null
+            })
+
           })
 
-          // Insert widget on nodelist and fix the css order tag // ORDERING NODES
-          if (!loadedWidgetPlacementRef) {
-            widgetOnRenderNode.push(loadedWidgetNode)
-          } else {
-            let index = widgetOnRenderNode.indexOf(loadedWidgetPlacementRef[0]) + (loadedWidgetPlacementRef[1] == -1 ? 0 : 1)
-            widgetOnRenderNode.splice(index, 0, loadedWidgetNode)
-          }
+            // Insert widget on nodelist and fix the css order tag // ORDERING NODES
+            if (!loadedWidgetPlacementRef) {
+              widgetOnRenderNode.push(loadedWidgetNode)
+            } else {
+              let index = widgetOnRenderNode.indexOf(loadedWidgetPlacementRef[0]) + (loadedWidgetPlacementRef[1] == -1 ? 0 : 1)
+              widgetOnRenderNode.splice(index, 0, loadedWidgetNode)
+            }
 
-          for (let i = 0; i < widgetOnRenderNode.length; i++) {
-            widgetOnRenderNode[i].style.setProperty("order", (2 * i).toString())
-            console.log(widgetOnRenderNode[i].style.order)
-          }
+            for (let i = 0; i < widgetOnRenderNode.length; i++) {
+              widgetOnRenderNode[i].style.setProperty("order", (2 * i).toString())
+              console.log(widgetOnRenderNode[i].style.order)
+            }
 
-          document.removeEventListener("mousemove", mouseMoveConnection)
-          loadedWidgetNode.style.setProperty("opacity", "1")
-          hoverWidget.remove()
-          hoverWidget = null
-          loadedWidgetNode = null
-          loadedWidgetPlacementRef = null
+            document.removeEventListener("mousemove", mouseMoveConnection)
+            loadedWidgetNode.style.setProperty("opacity", "1")
+            hoverWidget.remove()
+            hoverWidget = null
+            loadedWidgetNode = null
+            loadedWidgetPlacementRef = null
         }
       }
     
