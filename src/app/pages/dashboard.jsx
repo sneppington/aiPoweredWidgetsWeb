@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import WeatherWidget from "../widgets/weather";
 import TemperatureWidget from "../widgets/temperature";
 import TodoList from "../widgets/todo";
+import { root } from 'postcss';
 
 // Dashboard component makes various UI elements react to the theme color.
 export default function Dashboard() {
@@ -130,11 +131,13 @@ export default function Dashboard() {
     editButton?.addEventListener("click", () => {
       editing = !editing;
       if (editing) {
-        editUIWrapper.style.transform = "translateX(-10px)";
-        widgetWrapper.style.width = "calc(100vw - 300px)";
+        editUIWrapper.style.setProperty("transform", "translateX(-10px)")
+        widgetWrapper.style.setProperty("width", "calc(100vw - 300px)")
+        widgetWrapper.style.setProperty("user-select", "none")
       } else {
-        editUIWrapper.style.transform = "";
-        widgetWrapper.style.width = "";
+        editUIWrapper.style.setProperty("transform", "")
+        widgetWrapper.style.setProperty("width", "")
+        widgetWrapper.style.setProperty("user-select", "")
       }
     });
 
@@ -166,7 +169,7 @@ export default function Dashboard() {
     let hoverWidget
     let loadedWidget
     let loadedWidgetNode
-    let loadedWidgetPlacementRef = [] // [node, left or right]
+    let WidgetPlacementRef = "Startup" // [node, left or right]
     let loadedWidgetPlaced = false
     let mouseMoveConnection
 
@@ -186,6 +189,13 @@ export default function Dashboard() {
       </React.Fragment>
     )
 
+    function reOrderwidgetsOnRenderNode() {
+      for (let i = 0; i < widgetOnRenderNode.length; i++) {
+        widgetOnRenderNode[i].style.setProperty("order", (2 * i).toString())
+        console.log(widgetOnRenderNode[i].style.order)
+      }
+    }
+
     document.querySelectorAll(".widget-selector-widget").forEach((widget) => {
       let m1ButtonDown = (e) => {
         const selectedWidgetRef = widgetValueSwitch[widget.getAttribute("data-value")]
@@ -198,6 +208,7 @@ export default function Dashboard() {
           </React.Fragment>
         )
         requestAnimationFrame(() => {
+          console.log(widgetsOnRender)
           loadedWidgetNode = widgetRootNode.querySelectorAll(".widget-wrapper")[widgetsOnRender.length - 1]
           loadedWidgetNode.style.setProperty("opacity", "0.3")
           loadedWidgetNode.style.setProperty("order", (widgetsOnRender.length - 1).toString())
@@ -226,23 +237,24 @@ export default function Dashboard() {
         if (hoverWidget) {
           // Add connection to widget for placement of next widgets
 
-          const loadedWidgetNoChange = loadedWidgetNode // Loaded widget to const so that the func has a ref to its own node even if loadedWidgetNode changes
-          loadedWidgetNoChange.addEventListener("mouseover", (event) => {
-            if ( loadedWidgetNode === loadedWidgetNoChange ) { return }
+          const loadedWidgetConst = loadedWidget
+          const loadedWidgetConstNode = loadedWidgetNode // Loaded widget to const so that the func has a ref to its own node even if loadedWidgetNode changes
+          loadedWidgetConstNode.addEventListener("mousemove", (event) => {
+            if ( loadedWidgetNode === loadedWidgetConstNode ) { return }
 
-            loadedWidgetPlacementRef = [loadedWidgetNoChange, 1]
+            WidgetPlacementRef = [loadedWidgetConstNode, 1]
         
             if (loadedWidgetNode) {
-                const rect = loadedWidgetNoChange.getBoundingClientRect()
+                const rect = loadedWidgetConstNode.getBoundingClientRect()
                 const midpoint = rect.left + rect.width / 2
 
                 if (event.clientX < midpoint) { // Check if it is on the left => change 1 to -1
-                  loadedWidgetPlacementRef[1] = -1
+                  WidgetPlacementRef[1] = -1
                 }
 
                 loadedWidgetNode.style.setProperty(
                   "order",  
-                  (parseInt(loadedWidgetNoChange.style.order) + loadedWidgetPlacementRef[1]).toString()
+                  (parseInt(loadedWidgetConstNode.style.order) + WidgetPlacementRef[1]).toString()
                 )
             }
 
@@ -250,55 +262,103 @@ export default function Dashboard() {
             // Moving already placed widget
             let moving = false
 
-            loadedWidgetNoChange.addEventListener("mousedown", () => {
-              loadedWidgetNode = loadedWidgetNoChange
+            loadedWidgetConstNode.addEventListener("mousedown", () => {
+              if ( !editing ) { return }
 
-              loadedWidgetNoChange.style.setProperty("opacity", "0.3")
+              loadedWidgetNode = loadedWidgetConstNode
+
+              loadedWidgetConstNode.style.setProperty("opacity", "0.3")
               moving = true
             })
 
             document.addEventListener("mouseup", () => {
               if ( !moving ) { return }
+              // Style //
 
-              loadedWidgetNoChange.style.setProperty("opacity", "1")
+              loadedWidgetConstNode.style.setProperty("opacity", "1")
+
+              // Reset vars //
 
               moving = false
               loadedWidgetNode = null
+
+              // Change index of widget in widgetOnRenderNode //
+
+              if ( !WidgetPlacementRef ) { // Destroy Widget
+                let index = widgetOnRenderNode.indexOf(loadedWidgetConstNode)
+                if ( index === -1 ) { return }
+                
+                widgetOnRenderNode.splice(index, 1) // Remove
+
+                index = widgetsOnRender.indexOf(loadedWidgetConst)
+                widgetsOnRender.splice(index, 1) // Remove
+
+                console.log(widgetsOnRender)
+
+                widgetRoot.render(
+                  <React.Fragment>
+                    {widgetsOnRender}
+                  </React.Fragment>
+                )
+                reOrderwidgetsOnRenderNode()
+
+                return
+              }
+
+              if ( WidgetPlacementRef === loadedWidgetConstNode ) { return }
+
+              const oldIndex = widgetOnRenderNode.indexOf(loadedWidgetConstNode)
+              if ( oldIndex === -1 ) {
+                widgetOnRenderNode.splice(oldIndex, 1) // Remove
+
+                const newIndex = widgetOnRenderNode.indexOf(WidgetPlacementRef[0]) + (WidgetPlacementRef[1] == -1 ? 0 : 1)
+                widgetOnRenderNode.splice(newIndex, 0, loadedWidgetConstNode)
+
+                reOrderwidgetsOnRenderNode()
+              }
             })
 
           })
 
             // Insert widget on nodelist and fix the css order tag // ORDERING NODES
-            if (!loadedWidgetPlacementRef) {
+            if (!WidgetPlacementRef) {
               widgetOnRenderNode.push(loadedWidgetNode)
             } else {
-              let index = widgetOnRenderNode.indexOf(loadedWidgetPlacementRef[0]) + (loadedWidgetPlacementRef[1] == -1 ? 0 : 1)
+              const index = widgetOnRenderNode.indexOf(WidgetPlacementRef[0]) + (WidgetPlacementRef[1] == -1 ? 0 : 1)
               widgetOnRenderNode.splice(index, 0, loadedWidgetNode)
             }
 
-            for (let i = 0; i < widgetOnRenderNode.length; i++) {
-              widgetOnRenderNode[i].style.setProperty("order", (2 * i).toString())
-              console.log(widgetOnRenderNode[i].style.order)
-            }
+            reOrderwidgetsOnRenderNode()
 
             document.removeEventListener("mousemove", mouseMoveConnection)
             loadedWidgetNode.style.setProperty("opacity", "1")
             hoverWidget.remove()
             hoverWidget = null
             loadedWidgetNode = null
-            loadedWidgetPlacementRef = null
+            WidgetPlacementRef = null
         }
       }
     
       widget.addEventListener("mousedown", m1ButtonDown)
       document.addEventListener("mouseup", m1ButtonUp)
-    })    
+    })
+    
+    // Destroy widgets by ragging them to the edit UI trashcan
+
+    const trashcanDiv = document.querySelector("#trashcan-destroy-widgets")
+
+    trashcanDiv.addEventListener("mouseover", (e) => {
+      if ( WidgetPlacementRef === "Startup" ) { return }
+      if ( widgetOnRenderNode.length > 2 ) {
+        WidgetPlacementRef = "Startup"
+      } else {
+        WidgetPlacementRef = [widgetOnRenderNode[0], "left"]
+      }
+
+      WidgetPlacementRef = null // By making it null it will get deleted when widget is dropped
+    })
 
   }, []);
-
-  useEffect(() => {
-
-  }, [])
 
   // ------------------------------------------------------------------------------------------------
   // Whenever the theme color changes, update all affected UI parts.
@@ -357,7 +417,7 @@ export default function Dashboard() {
         </header>
       </div>
       <main id="dashboard">
-        <div id="bottom-left-buttons">
+        <div id="manage-dashboard-buttons">
             <button id="share-button">share</button>
             <button id="edit-button">edit</button>
         </div>
@@ -402,6 +462,56 @@ export default function Dashboard() {
             <div className="widget-selector-widget" data-value="WeatherWidget">Weather</div>
             <div className="widget-selector-widget" data-value="TemperatureWidget">Temperature</div>
             <div className="widget-selector-widget" data-value="TodoList">To Do List</div>
+          </div>
+          <div className="vertical-flex-separator" style={{ flex: "1" }}></div>
+          <div id="trashcan-destroy-widgets">
+            <svg width="100" height="100" viewBox="0 0 256 256">
+              <g
+                style={{
+                  stroke: "none",
+                  strokeWidth: 0,
+                  strokeDasharray: "none",
+                  strokeLinecap: "butt",
+                  strokeLinejoin: "miter",
+                  strokeMiterlimit: 10,
+                  fill: "none",
+                  fillRule: "nonzero",
+                  opacity: 1,
+                }}
+                transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
+              >
+                <path
+                  d="M 76.777 2.881 H 57.333 V 2.412 C 57.333 1.08 56.253 0 54.921 0 H 35.079 c -1.332 0 -2.412 1.08 -2.412 2.412 v 0.469 H 13.223 c -1.332 0 -2.412 1.08 -2.412 2.412 v 9.526 c 0 1.332 1.08 2.412 2.412 2.412 h 63.554 c 1.332 0 2.412 -1.08 2.412 -2.412 V 5.293 C 79.189 3.961 78.109 2.881 76.777 2.881 z"
+                  style={{
+                    stroke: "none",
+                    strokeWidth: 1,
+                    strokeDasharray: "none",
+                    strokeLinecap: "butt",
+                    strokeLinejoin: "miter",
+                    strokeMiterlimit: 10,
+                    fill: "rgb(0,0,0)",
+                    fillRule: "nonzero",
+                    opacity: 1,
+                  }}
+                  transform="matrix(1 0 0 1 0 0)"
+                />
+                <path
+                  d="M 73.153 22.119 H 16.847 c -1.332 0 -2.412 1.08 -2.412 2.412 v 63.057 c 0 1.332 1.08 2.412 2.412 2.412 h 56.306 c 1.332 0 2.412 -1.08 2.412 -2.412 V 24.531 C 75.565 23.199 74.485 22.119 73.153 22.119 z M 33.543 81.32 c 0 1.332 -1.08 2.412 -2.412 2.412 h -2.245 c -1.332 0 -2.412 -1.08 -2.412 -2.412 V 30.799 c 0 -1.332 1.08 -2.412 2.412 -2.412 h 2.245 c 1.332 0 2.412 1.08 2.412 2.412 V 81.32 z M 48.535 81.32 c 0 1.332 -1.08 2.412 -2.412 2.412 h -2.245 c -1.332 0 -2.412 -1.08 -2.412 -2.412 V 30.799 c 0 -1.332 1.08 -2.412 2.412 -2.412 h 2.245 c 1.332 0 2.412 1.08 2.412 2.412 V 81.32 z M 63.526 81.32 c 0 1.332 -1.08 2.412 -2.412 2.412 h -2.245 c -1.332 0 -2.412 -1.08 -2.412 -2.412 V 30.799 c 0 -1.332 1.08 -2.412 2.412 -2.412 h 2.245 c 1.332 0 2.412 1.08 2.412 2.412 V 81.32 z"
+                  style={{
+                    stroke: "none",
+                    strokeWidth: 1,
+                    strokeDasharray: "none",
+                    strokeLinecap: "butt",
+                    strokeLinejoin: "miter",
+                    strokeMiterlimit: 10,
+                    fill: "rgb(0,0,0)",
+                    fillRule: "nonzero",
+                    opacity: 1,
+                  }}
+                  transform="matrix(1 0 0 1 0 0)"
+                />
+              </g>
+            </svg>
           </div>
         </div>
       </main>
