@@ -827,6 +827,7 @@ form input:focus {
 #edit-ui {
   height: calc(100vh - 110px);
   width: 300px;
+  user-select: "none";
   font-family: 'Ubuntu', sans-serif;
   font-weight: bolder;
   font-size: 20px;
@@ -926,6 +927,7 @@ input[type="color"]:hover {
 #background-image-uploader-label {
   font-size: 15px;
   border-radius: 20px;
+  white-space: nowrap;
   color: white;
   background-color: var(--colorTheme);
   padding: 10px;

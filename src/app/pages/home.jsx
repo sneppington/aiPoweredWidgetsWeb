@@ -63,6 +63,8 @@ export default function Home() {
   let darkerShade = darkenColor(colorTheme);
 
   useEffect(() => {
+    let disconnects = []
+
     document.documentElement.style.setProperty('--colorTheme', colorTheme); // Setting the theme color
 
     // Setting the header's color

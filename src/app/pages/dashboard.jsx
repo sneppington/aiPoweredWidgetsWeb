@@ -1,135 +1,144 @@
-"use client";
+"use client"
 
-import React from 'react';
-import ReactDOM from 'react-dom/client'; // Correct for React 18
+import React from 'react'
+import ReactDOM from 'react-dom/client' // Correct for React 18
 
-import { useState, useEffect } from "react";
-import WeatherWidget from "../widgets/weather";
-import TemperatureWidget from "../widgets/temperature";
-import TodoList from "../widgets/todo";
-import { root } from 'postcss';
+import { useState, useEffect } from "react"
+import WeatherWidget from "../widgets/weather"
+import TemperatureWidget from "../widgets/temperature"
+import TodoList from "../widgets/todo"
+import { root } from 'postcss'
 
 // Dashboard component makes various UI elements react to the theme color.
 export default function Dashboard() {
   // Store the selected theme as an RGB string.
-  const [colorTheme, setColorTheme] = useState("rgb(255, 196, 0)");
-  const [backgroundBlur, setBackgroundBlur] = useState(100);
+  const [colorTheme, setColorTheme] = useState("rgb(255, 196, 0)")
+  const [backgroundBlur, setBackgroundBlur] = useState(100)
 
   // Helper: Generate a random integer between 0 and options - 1.
   function randi(options) {
-    return Math.floor(Math.random() * options);
+    return Math.floor(Math.random() * options)
   }
 
   // Helper: Create an array of shades from a given rgb string.
   function generateShadesFromRgb(rgb, numberOfShades) {
-    const shades = [];
-    const [r, g, b] = parseRgbString(rgb);
+    const shades = []
+    const [r, g, b] = parseRgbString(rgb)
 
     for (let i = 0; i < numberOfShades; i++) {
-      const factor = 1 - i / numberOfShades;
-      shades.push(`rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`);
+      const factor = 1 - i / numberOfShades
+      shades.push(`rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`)
     }
-    return shades;
+    return shades
   }
 
   // Helper: Parses an "rgb(...)" string into its numeric components.
   function parseRgbString(rgb) {
-    const result = rgb.match(/\d+/g);
-    return result ? result.map(Number) : [0, 0, 0];
+    const result = rgb.match(/\d+/g)
+    return result ? result.map(Number) : [0, 0, 0]
   }
 
   // Helper: Darken an rgb color by reducing each component by 20%.
   function darkenColor(rgbColor) {
-    const rgb = rgbColor.match(/\d+/g);
-    if (!rgb) throw new Error("Invalid RGB color format");
+    const rgb = rgbColor.match(/\d+/g)
+    if (!rgb) throw new Error("Invalid RGB color format")
 
-    let [r, g, b] = rgb.map(Number);
+    let [r, g, b] = rgb.map(Number)
 
-    r = Math.max(0, Math.floor(r * 0.8));
-    g = Math.max(0, Math.floor(g * 0.8));
-    b = Math.max(0, Math.floor(b * 0.8));
+    r = Math.max(0, Math.floor(r * 0.8))
+    g = Math.max(0, Math.floor(g * 0.8))
+    b = Math.max(0, Math.floor(b * 0.8))
 
-    return `rgb(${r}, ${g}, ${b})`;
+    return `rgb(${r}, ${g}, ${b})`
   }
 
   // Helper: Convert an rgb string to a hex string (for the color input).
   function rgbToHex(rgb) {
-    const result = rgb.match(/\d+/g);
-    if (!result) return "#000000";
-    const [r, g, b] = result.map((val) => parseInt(val).toString(16).padStart(2, "0"));
-    return `#${r}${g}${b}`;
+    const result = rgb.match(/\d+/g)
+    if (!result) return "#000000"
+    const [r, g, b] = result.map((val) => parseInt(val).toString(16).padStart(2, "0"))
+    return `#${r}${g}${b}`
   }
 
   // Helper: Convert a hex string to an rgb string.
   function hexToRgb(hex) {
-    hex = hex.replace(/^#/, "");
+    hex = hex.replace(/^#/, "")
     if (hex.length === 3) {
-      hex = hex.split("").map((c) => c + c).join("");
+      hex = hex.split("").map((c) => c + c).join("")
     }
-    const bigint = parseInt(hex, 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    return `rgb(${r}, ${g}, ${b})`;
+    const bigint = parseInt(hex, 16)
+    const r = (bigint >> 16) & 255
+    const g = (bigint >> 8) & 255
+    const b = bigint & 255
+    return `rgb(${r}, ${g}, ${b})`
+  }
+
+  function findRemoveIndex(arr, item) {
+    const index = arr.indexOf(item)
+    if ( index === -1 ) { return false } // Item not in array
+    arr.splice(index, 1) // Remove index
+    return true
   }
 
   // ------------------------------------------------------------------------------------------------
   // One-time DOM setup: Create some background shapes and register UI event listeners.
   useEffect(() => {
+    let disconnects = []
+
     // (1) Background Shapes – add 10 shapes at random positions.
-    const bgShapesWrapper = document.querySelector("#background-shapes-wrapper");
-    bgShapesWrapper.innerHTML = "";
-    const initialShades = generateShadesFromRgb(colorTheme, 15);
+    const bgShapesWrapper = document.querySelector("#background-shapes-wrapper")
+    bgShapesWrapper.innerHTML = ""
+    const initialShades = generateShadesFromRgb(colorTheme, 15)
 
     for (let i = 0; i < 10; i++) {
-      const shape = document.createElement("div");
-      shape.style.backgroundColor = "white";
-      shape.style.transition = "background-color cubic-bezier(0.075, 0.82, 0.165, 1) 1s";
-      shape.style.position = "absolute";
-      shape.style.left = `${Math.random() * 100}%`;
-      shape.style.top = `${Math.random() * 100}%`;
-      shape.style.height = `${Math.random() * 20 + 20}vw`;
-      shape.style.width = `${Math.random() * 20 + 20}vw`;
+      const shape = document.createElement("div")
+      shape.style.backgroundColor = "white"
+      shape.style.transition = "background-color cubic-bezier(0.075, 0.82, 0.165, 1) 1s"
+      shape.style.position = "absolute"
+      shape.style.left = `${Math.random() * 100}%`
+      shape.style.top = `${Math.random() * 100}%`
+      shape.style.height = `${Math.random() * 20 + 20}vw`
+      shape.style.width = `${Math.random() * 20 + 20}vw`
 
       if (randi(2) === 0) {
-        shape.style.borderRadius = "50%";
+        shape.style.borderRadius = "50%"
       } else {
-        shape.style.rotate = `${Math.random() * 90}deg`;
+        shape.style.rotate = `${Math.random() * 90}deg`
       }
 
-      bgShapesWrapper.appendChild(shape);
-      shape.style.backgroundColor = initialShades[randi(initialShades.length)];
+      bgShapesWrapper.appendChild(shape)
+      shape.style.backgroundColor = initialShades[randi(initialShades.length)]
     }
 
     // (2) Profile UI: Show/hide profile options on the profile picture click.
-    const pfp = document.querySelector("#profile-picture");
-    const pfpOptions = document.querySelector("#profile-options");
+    const pfp = document.querySelector("#profile-picture")
+    const pfpOptions = document.querySelector("#profile-options")
 
     const userUIClickOutDetector = (event) => {
-      if (pfp?.contains(event.target)) return;
-      pfpOptions.style.opacity = "0";
-      pfpOptions.style.pointerEvents = "none";
-      document.removeEventListener("click", userUIClickOutDetector);
-    };
+      if (pfp?.contains(event.target)) return
+      pfpOptions.style.opacity = "0"
+      pfpOptions.style.pointerEvents = "none"
+      document.removeEventListener("click", userUIClickOutDetector)
+    }
 
     pfp?.addEventListener("click", () => {
-      pfpOptions.style.opacity = "1";
-      pfpOptions.style.pointerEvents = "all";
-      document.addEventListener("click", userUIClickOutDetector);
-    });
+      pfpOptions.style.opacity = "1"
+      pfpOptions.style.pointerEvents = "all"
+      document.addEventListener("click", userUIClickOutDetector)
+    })
 
     // (3) Edit UI Logic: Toggle an editing mode that shifts some UI elements.
-    let editing = false;
-    let hasBG = false;
-    const editButton = document.querySelector("#edit-button");
-    const editUIWrapper = document.querySelector("#edit-ui");
-    const widgetWrapper = document.querySelector("#dashboard-widgets");
+    let editing = false
+    let hasBG = false
+    const editButton = document.querySelector("#edit-button")
+    const editUIWrapper = document.querySelector("#edit-ui")
+    const widgetWrapper = document.querySelector("#dashboard-widgets")
 
-    const uploadBackgroundButton = document.querySelector("#background-image-uploader");
-    const uploadBackgroundText = document.querySelector("#background-image-uploader-label");
+    const uploadBackgroundButton = document.querySelector("#background-image-uploader")
+    const uploadBackgroundText = document.querySelector("#background-image-uploader-label")
 
     editButton?.addEventListener("click", () => {
-      editing = !editing;
+      editing = !editing
       if (editing) {
         editUIWrapper.style.setProperty("transform", "translateX(-10px)")
         widgetWrapper.style.setProperty("width", "calc(100vw - 300px)")
@@ -139,38 +148,38 @@ export default function Dashboard() {
         widgetWrapper.style.setProperty("width", "")
         widgetWrapper.style.setProperty("user-select", "")
       }
-    });
+    })
 
-    uploadBackgroundButton?.addEventListener("change", (e) => {
-      const target = e.target;
-      const file = target.files[0];
+    uploadBackgroundButton.addEventListener("change", (e) => {
+      const target = e.target
+      const file = target.files[0]
       if (file) {
-        const reader = new FileReader();
+        const reader = new FileReader()
         reader.onload = (event) => {
-          document.querySelector(".background-filter").style.backgroundImage = `url(${event.target.result})`;
-          hasBG = true;
-          uploadBackgroundText.textContent = "Remove Background";
-        };
-        reader.readAsDataURL(file);
+          document.querySelector(".background-filter").style.backgroundImage = `url(${event.target.result})`
+          hasBG = true
+          uploadBackgroundText.textContent = "Remove Background"
+        }
+        reader.readAsDataURL(file)
       }
-      target.value = "";
-    });
+      target.value = ""
+    })
 
     uploadBackgroundButton?.addEventListener("click", (e) => {
       if (hasBG) {
-        e.preventDefault();
-        document.querySelector(".background-filter").style.backgroundImage = "";
-        uploadBackgroundText.textContent = "Background Image";
-        hasBG = false;
+        e.preventDefault()
+        document.querySelector(".background-filter").style.backgroundImage = ""
+        uploadBackgroundText.textContent = "Background Image"
+        hasBG = false
       }
-    });
+    })
 
-    // Adding widgets
+    // (3.1) Adding widgets: Adding/Removing widgets (This was painful to make)
+
     let hoverWidget
-    let loadedWidget
-    let loadedWidgetNode
-    let WidgetPlacementRef = "Startup" // [node, left or right]
-    let loadedWidgetPlaced = false
+    let currentWidget
+    let currentWidgetNode
+    let WidgetPlacementRef = "Startup" // [node, left or right] startup is for when there are 0 widgets
     let mouseMoveConnection
 
     const widgetRootNode = document.querySelector("#dashboard-widgets")
@@ -183,35 +192,222 @@ export default function Dashboard() {
     
     let widgetsOnRender = []
     let widgetOnRenderNode = []
-    widgetRoot.render(
-      <React.Fragment>
-        {widgetsOnRender}
-      </React.Fragment>
-    )
 
-    function reOrderwidgetsOnRenderNode() {
-      for (let i = 0; i < widgetOnRenderNode.length; i++) {
-        widgetOnRenderNode[i].style.setProperty("order", (2 * i).toString())
-        console.log(widgetOnRenderNode[i].style.order)
-      }
-    }
+    let widgetNodetoComponent = {}
+    let widgetComponenttoNode = {}
 
-    document.querySelectorAll(".widget-selector-widget").forEach((widget) => {
-      let m1ButtonDown = (e) => {
-        const selectedWidgetRef = widgetValueSwitch[widget.getAttribute("data-value")]
-        loadedWidget = React.createElement(selectedWidgetRef)
+    let widgetDisconnects = {} // widget: [Disconnects]
 
-        widgetsOnRender.push(loadedWidget)
+    function resetAllWidgetsConnections() {
+      return new Promise((resolve, reject) => {
+        try {
+          // Iterate over each widget node
+          widgetOnRenderNode.forEach(widgetNode => {
+            const widget = widgetNodetoComponent[widgetNode.id]
+
+            // Disconnect current connections
+            widgetDisconnects[widget.props.id].forEach(disconnect => disconnect())
+
+            widgetDisconnects[widget.props.id] = []
+
+            // Re-establish connections
+            setupWidgetConnections(widget, widgetNode)
+          })
+
+          // Resolve the promise after successfully resetting all connections
+          resolve('All widget connections have been reset successfully.')
+        } catch (error) {
+          // Reject the promise if any error occurs
+          reject(error)
+        }
+      })
+    }    
+
+    function linkHangingWidgetNodes() {
+      return new Promise((resolve, reject) => {
+        try {
+          const widgetWrapperChildren = [...widgetWrapper.querySelectorAll(".widget-wrapper")]
+          
+          for (let index = 0; index < widgetOnRenderNode.length; index++) {
+            const widget = widgetsOnRender[index]
+
+            let widgetNode = widgetComponenttoNode[widget.props.id]
+            const nodeIndex = widgetOnRenderNode.findIndex(widget_ => widgetNode.id === widget_.id)
+
+            // Check if the widgetNode is missing from widgetWrapperChildren
+            if ((!widgetWrapperChildren.includes(widgetNode)) && (nodeIndex !== -1)) {
+              const order = widgetNode.style.order // Retrieve the "order" attribute
+              const id = widgetNode.id
+    
+              // Replace it with a corresponding node from widgetWrapperChildren
+              widgetNode = widgetWrapperChildren[index]
+              widgetOnRenderNode[nodeIndex] = widgetNode
+              widgetNode.style.setProperty("order", order)
+              widgetNode.id = id
+
+              // Update the mapping with the replaced widgetNode
+              widgetNodetoComponent[widgetNode.id] = widget
+              widgetComponenttoNode[widget.props.id] = widgetNode
+              widgetDisconnects[widget.props.id] = []
+            }
+          }
+
+          // Resolve the promise once the operation completes
+          resolve("All hanging widget nodes linked successfully")
+        } catch (error) {
+          // If any error occurs, reject the promise
+          reject(error)
+        }
+      })
+    }    
+
+    function renderReactWidgets() {
+      return new Promise(resolve => {
         widgetRoot.render(
           <React.Fragment>
             {widgetsOnRender}
           </React.Fragment>
         )
         requestAnimationFrame(() => {
-          console.log(widgetsOnRender)
-          loadedWidgetNode = widgetRootNode.querySelectorAll(".widget-wrapper")[widgetsOnRender.length - 1]
-          loadedWidgetNode.style.setProperty("opacity", "0.3")
-          loadedWidgetNode.style.setProperty("order", (widgetsOnRender.length - 1).toString())
+          linkHangingWidgetNodes().then(() => {
+            resetAllWidgetsConnections().then(resolve)
+          })
+        })
+      })
+    }
+
+    function reOrderwidgets() {
+      return new Promise(resolve => {
+        for (let i = 0; i < widgetOnRenderNode.length; i++) {
+          widgetOnRenderNode[i].style.setProperty("order", (2 * i).toString())
+        }
+        resolve()
+      })
+    }
+
+    async function renderAndReorderWidgets() {
+      try {
+        await renderReactWidgets()
+        await reOrderwidgets()
+        console.log("Render and reorder completed in sequence")
+      } catch (error) {
+        console.error("An error occurred while rendering and reordering:", error)
+      }
+    }
+
+    function setupWidgetConnections(widget, widgetNode) {
+      let index = -1
+      for (let i = 0; i < widgetsOnRender.length; i++) { // All widget components are equal to js
+        if (widgetsOnRender[i].props.id === widget.props.id) {
+          index = i
+          break
+        }
+      }
+
+      // Mousemove handler for tracking live repositioning of the widget
+      const mouseMoveHandler = event => {
+        // Exit early if the widget node hasn’t changed
+        if (currentWidgetNode === widgetNode) return
+    
+        // Set up placement reference for widget positioning
+        WidgetPlacementRef = [widgetNode, 1]
+    
+        if (currentWidgetNode) {
+          // Determine mouse relative position to the widget
+          const rect = widgetNode.getBoundingClientRect()
+          const midpoint = rect.left + rect.width / 2
+    
+          // Update placement reference based on mouse position (left/right)
+          if (event.clientX < midpoint)
+            WidgetPlacementRef[1] = -1
+    
+          // Adjust the order style property for proper positioning
+          currentWidgetNode.style.setProperty(
+            "order",
+            (parseInt(widgetNode.style.order) + WidgetPlacementRef[1]).toString()
+          )
+        }
+    
+        // Initialize variable for tracking if dragging has started
+        let moving = false
+    
+        // Mousedown handler on the widget to start the dragging process
+        const mouseDownHandler = () => {
+          if (!editing) return
+          // Change visual appearance to indicate the widget is being moved
+          widgetNode.style.setProperty("opacity", "0.3")
+          currentWidgetNode = widgetNode
+          moving = true
+        }
+        widgetNode.addEventListener("mousedown", mouseDownHandler)
+        // Store cleanup for mousedown event
+        widgetDisconnects[widget.props.id].push(() => widgetNode.removeEventListener("mousedown", mouseDownHandler))
+    
+        // Mouseup handler that finalizes movement or removal of the widget
+        function mouseUpWidget() {
+          // Do nothing if the widget isn’t actually being dragged
+          if (!moving) return
+          
+          // Restore opacity once movement is finished
+          widgetNode.style.setProperty("opacity", "1")
+          moving = false
+          currentWidgetNode = null
+    
+          // If no valid placement was established then remove the widget
+          if (!WidgetPlacementRef) {
+            const widgetIndex = widgetsOnRender.findIndex(widget_ => widget.props.id === widget_.props.id)
+            const indexNode = widgetOnRenderNode.indexOf(widgetNode)
+            console.log(widgetIndex)
+            if (widgetIndex !== -1 && indexNode !== -1) {
+              delete widgetComponenttoNode[widget.props.id]
+              delete widgetNodetoComponent[widgetNode.id]
+
+              widgetsOnRender.splice(widgetIndex, 1)
+              widgetOnRenderNode.splice(indexNode, 1)
+
+              renderAndReorderWidgets()
+            }
+            if (widgetsOnRender.length === 0)
+              WidgetPlacementRef = "Startup"
+    
+            // Clean up all widget-specific connection callbacks
+            widgetDisconnects[widget.props.id].forEach(disconnect => disconnect())
+            return
+          }
+    
+          // If the placement reference hasn’t changed, skip reordering
+          if (WidgetPlacementRef === widgetNode) return
+    
+          // Remove the widget from its current placement before re-inserting it
+          const index = widgetOnRenderNode.indexOf(widgetNode)
+          widgetOnRenderNode.splice(index, 1)
+          if (index !== -1) {
+            const newIndex = widgetOnRenderNode.indexOf(WidgetPlacementRef[0]) + (WidgetPlacementRef[1] === -1 ? 0 : 1)
+            widgetOnRenderNode.splice(newIndex, 0, widgetNode)
+            reOrderwidgets()
+          }
+        }
+        document.addEventListener("mouseup", mouseUpWidget)
+        // Store cleanup for the document’s mouseup event
+        widgetDisconnects[widget.props.id].push(() => document.removeEventListener("mouseup", mouseUpWidget))
+      }
+    
+      // Attach the mousemove listener and store its cleanup callback
+      widgetNode.addEventListener("mousemove", mouseMoveHandler)
+      widgetDisconnects[widget.props.id].push(() => widgetNode.removeEventListener("mousemove", mouseMoveHandler))
+    }
+
+    document.querySelectorAll(".widget-selector-widget").forEach((widget) => {
+      function m1ButtonDown() {
+        const selectedWidgetRef = widgetValueSwitch[widget.getAttribute("data-value")]
+        currentWidget = React.createElement(selectedWidgetRef, { id: Math.random() })
+
+        widgetsOnRender.push(currentWidget)
+        renderReactWidgets()
+        requestAnimationFrame(() => {
+          currentWidgetNode = widgetRootNode.querySelectorAll(".widget-wrapper")[widgetsOnRender.length - 1]
+          currentWidgetNode.style.setProperty("opacity", "0.3")
+          currentWidgetNode.style.setProperty("order", (widgetsOnRender.length - 1).toString())
         })
 
         // Setting up HOVERWIDGET //
@@ -232,164 +428,115 @@ export default function Dashboard() {
 
         // End of HOVERWIDGET //
       }
-    
-      let m1ButtonUp = () => {
-        if (hoverWidget) {
-          // Add connection to widget for placement of next widgets
+      
+      // Modified m1ButtonUp function that now calls the helper to attach connections
+      function m1ButtonUp() {
+        // Exit early if there’s no currently hovered widget
+        if (!hoverWidget) return
+      
+        // Save references to the current widget and its DOM node
+        const currentWidgetConst = currentWidget
+        const currentWidgetConstNode = currentWidgetNode
 
-          const loadedWidgetConst = loadedWidget
-          const loadedWidgetConstNode = loadedWidgetNode // Loaded widget to const so that the func has a ref to its own node even if loadedWidgetNode changes
-          loadedWidgetConstNode.addEventListener("mousemove", (event) => {
-            if ( loadedWidgetNode === loadedWidgetConstNode ) { return }
-
-            WidgetPlacementRef = [loadedWidgetConstNode, 1]
-        
-            if (loadedWidgetNode) {
-                const rect = loadedWidgetConstNode.getBoundingClientRect()
-                const midpoint = rect.left + rect.width / 2
-
-                if (event.clientX < midpoint) { // Check if it is on the left => change 1 to -1
-                  WidgetPlacementRef[1] = -1
-                }
-
-                loadedWidgetNode.style.setProperty(
-                  "order",  
-                  (parseInt(loadedWidgetConstNode.style.order) + WidgetPlacementRef[1]).toString()
-                )
-            }
-
-
-            // Moving already placed widget
-            let moving = false
-
-            loadedWidgetConstNode.addEventListener("mousedown", () => {
-              if ( !editing ) { return }
-
-              loadedWidgetNode = loadedWidgetConstNode
-
-              loadedWidgetConstNode.style.setProperty("opacity", "0.3")
-              moving = true
-            })
-
-            document.addEventListener("mouseup", () => {
-              if ( !moving ) { return }
-              // Style //
-
-              loadedWidgetConstNode.style.setProperty("opacity", "1")
-
-              // Reset vars //
-
-              moving = false
-              loadedWidgetNode = null
-
-              // Change index of widget in widgetOnRenderNode //
-
-              if ( !WidgetPlacementRef ) { // Destroy Widget
-                let index = widgetOnRenderNode.indexOf(loadedWidgetConstNode)
-                if ( index === -1 ) { return }
-                
-                widgetOnRenderNode.splice(index, 1) // Remove
-
-                index = widgetsOnRender.indexOf(loadedWidgetConst)
-                widgetsOnRender.splice(index, 1) // Remove
-
-                console.log(widgetsOnRender)
-
-                widgetRoot.render(
-                  <React.Fragment>
-                    {widgetsOnRender}
-                  </React.Fragment>
-                )
-                reOrderwidgetsOnRenderNode()
-
-                return
-              }
-
-              if ( WidgetPlacementRef === loadedWidgetConstNode ) { return }
-
-              const oldIndex = widgetOnRenderNode.indexOf(loadedWidgetConstNode)
-              if ( oldIndex === -1 ) {
-                widgetOnRenderNode.splice(oldIndex, 1) // Remove
-
-                const newIndex = widgetOnRenderNode.indexOf(WidgetPlacementRef[0]) + (WidgetPlacementRef[1] == -1 ? 0 : 1)
-                widgetOnRenderNode.splice(newIndex, 0, loadedWidgetConstNode)
-
-                reOrderwidgetsOnRenderNode()
-              }
-            })
-
-          })
-
-            // Insert widget on nodelist and fix the css order tag // ORDERING NODES
-            if (!WidgetPlacementRef) {
-              widgetOnRenderNode.push(loadedWidgetNode)
-            } else {
-              const index = widgetOnRenderNode.indexOf(WidgetPlacementRef[0]) + (WidgetPlacementRef[1] == -1 ? 0 : 1)
-              widgetOnRenderNode.splice(index, 0, loadedWidgetNode)
-            }
-
-            reOrderwidgetsOnRenderNode()
-
-            document.removeEventListener("mousemove", mouseMoveConnection)
-            loadedWidgetNode.style.setProperty("opacity", "1")
-            hoverWidget.remove()
-            hoverWidget = null
-            loadedWidgetNode = null
-            WidgetPlacementRef = null
+        // Call helper so that all event connections for this widget are attached
+        // and their disconnect functions are stored in disconnectsWidget
+        widgetDisconnects[currentWidget.props.id] = [] // Startup a new slot for the new widget
+        currentWidgetConstNode.id = (Math.random() * 9999999999).toString()
+        widgetNodetoComponent[currentWidgetConstNode.id] = currentWidget // Easy widgetNode -> widgetComponent
+        widgetComponenttoNode[currentWidgetConst.props.id] = currentWidgetConstNode
+        setupWidgetConnections(currentWidgetConst, currentWidgetConstNode)
+      
+        // Insert the current widget into the node order list based on placement reference
+        if (!WidgetPlacementRef)
+          widgetOnRenderNode.push(currentWidgetNode)
+        else {
+          const index = widgetOnRenderNode.indexOf(WidgetPlacementRef[0]) + (WidgetPlacementRef[1] === -1 ? 0 : 1)
+          widgetOnRenderNode.splice(index, 0, currentWidgetNode)
         }
+      
+        // Reorder all widgets in the UI to reflect the change
+        reOrderwidgets()
+      
+        // Remove the connection that makes the hover widget follow the mouse
+        document.removeEventListener("mousemove", mouseMoveConnection)
+        // Reset the widget’s style and clean up temporary globals
+        currentWidgetNode.style.setProperty("opacity", "1")
+        hoverWidget.remove()
+        hoverWidget = null
+        currentWidgetNode = null
+        WidgetPlacementRef = null
       }
+      
     
       widget.addEventListener("mousedown", m1ButtonDown)
       document.addEventListener("mouseup", m1ButtonUp)
+
+      disconnects.push(() => {
+        document.removeEventListener("mousedown", m1ButtonDown)
+      })
+      disconnects.push(() => {
+        document.removeEventListener("mouseup", m1ButtonUp)
+      })
     })
     
-    // Destroy widgets by ragging them to the edit UI trashcan
+    // Destroy widgets by dragging them to the edit UI trashcan
 
     const trashcanDiv = document.querySelector("#trashcan-destroy-widgets")
 
-    trashcanDiv.addEventListener("mouseover", (e) => {
+    function trashcanMouseOver(e) {
       if ( WidgetPlacementRef === "Startup" ) { return }
-      if ( widgetOnRenderNode.length > 2 ) {
+      if ( widgetOnRenderNode.length === 0 ) {
         WidgetPlacementRef = "Startup"
       } else {
-        WidgetPlacementRef = [widgetOnRenderNode[0], "left"]
+        WidgetPlacementRef = null // By making it null it will get deleted when widget is dropped
       }
+    }
 
-      WidgetPlacementRef = null // By making it null it will get deleted when widget is dropped
+    trashcanDiv.addEventListener("mouseover", trashcanMouseOver)
+    disconnects.push(() => {
+      trashcanDiv.removeEventListener("mouseover", trashcanMouseOver)
     })
 
-  }, []);
+    // (4) Disconnect connections when unmount
+
+    return () => {
+      disconnects.forEach(element => {
+        element()
+      });
+    }
+
+  }, [])
 
   // ------------------------------------------------------------------------------------------------
   // Whenever the theme color changes, update all affected UI parts.
   useEffect(() => {
-    const shades = generateShadesFromRgb(colorTheme, 15);
-    const darkerShade = darkenColor(colorTheme);
-    document.documentElement.style.setProperty("--colorTheme", colorTheme);
+    const shades = generateShadesFromRgb(colorTheme, 15)
+    const darkerShade = darkenColor(colorTheme)
+    document.documentElement.style.setProperty("--colorTheme", colorTheme)
 
-    const landingHeader = document.querySelector("#page-header");
-    landingHeader.style.background = `linear-gradient(to top, ${darkerShade}, rgba(0,0,0,0) 100%)`;
+    const landingHeader = document.querySelector("#page-header")
+    landingHeader.style.background = `linear-gradient(to top, ${darkerShade}, rgba(0,0,0,0) 100%)`
 
-    const bgShapesWrapper = document.querySelector("#background-shapes-wrapper");
-    const shapes = bgShapesWrapper.querySelectorAll("div");
+    const bgShapesWrapper = document.querySelector("#background-shapes-wrapper")
+    const shapes = bgShapesWrapper.querySelectorAll("div")
     shapes.forEach((shape) => {
-      shape.style.backgroundColor = shades[randi(shades.length)];
-    });
-  }, [colorTheme]);
+      shape.style.backgroundColor = shades[randi(shades.length)]
+    })
+  }, [colorTheme])
 
   // ------------------------------------------------------------------------------------------------
   // When the user selects a new color from the input, convert it to RGB and update the state.
   const handleColorChange = (event) => {
-    const hexColor = event.target.value;
-    const rgbColor = hexToRgb(hexColor);
-    setColorTheme(rgbColor);
-  };
+    const hexColor = event.target.value
+    const rgbColor = hexToRgb(hexColor)
+    setColorTheme(rgbColor)
+  }
 
   // ------------------------------------------------------------------------------------------------
   // Render the dashboard UI.
   return (
     <>
-      <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet"></link>
+      <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400700&display=swap" rel="stylesheet"></link>
       <div id="background">
         <div id="background-shapes-wrapper"/>
         <div className="background-filter"/>
@@ -430,7 +577,7 @@ export default function Dashboard() {
               <input type="color" name="colorPicker" value={ rgbToHex(colorTheme) }
               onChange={(e) => {
                 const hex = e.target.value // Get hex color from input
-                const rgb = hex.replace(/^#/, '').match(/.{2}/g)?.map(x => parseInt(x, 16)) || [];
+                const rgb = hex.replace(/^#/, '').match(/.{2}/g)?.map(x => parseInt(x, 16)) || []
                 const newColorTheme = `rgb(${rgb.join(",")})` // Convert to RGB format
                 setColorTheme(newColorTheme)
               }}
@@ -451,7 +598,6 @@ export default function Dashboard() {
 
               <select id="background-image-sizing-selector" name="dropdown" onChange={(e) => {
                 document.querySelector(".background-filter").style.setProperty("background-size", e.target.value)
-                console.log(e.target.value)
               }}>
                   <option value="cover">Cover</option>
                   <option value="auto">Mosaic</option>
@@ -517,5 +663,5 @@ export default function Dashboard() {
       </main>
       <div id="react-element-buffer" style={{ position: "absolute", display: "none" }}></div>
     </>
-    );
+    )
 } 
