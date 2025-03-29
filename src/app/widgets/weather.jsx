@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react"
+import { clearInterval } from "timers"
 
 const weatherCodes = {
   0: "Clear sky",
@@ -29,26 +30,26 @@ const weatherCodes = {
   95: "Thunderstorm",
   96: "Thunderstorm with slight hail",
   99: "Thunderstorm with heavy hail"
-};
+}
 
 async function getWeather(latitude, longitude) {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
 
   try {
-    const response = await fetch(url);
-    const data = await response.json();
+    const response = await fetch(url)
+    const data = await response.json()
     if (data.current_weather) {
       return {
         weathercode: weatherCodes[data.current_weather.weathercode],
         temperature: data.current_weather.temperature,
-      };
+      }
     } else {
-      console.error("Current weather data not found.");
-      return null;
+      console.error("Current weather data not found.")
+      return null
     }
   } catch (error) {
-    console.error("Error fetching weather data:", error);
-    return null;
+    console.error("Error fetching weather data:", error)
+    return null
   }
 }
 
@@ -57,37 +58,55 @@ function getClientCoordinates() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          resolve({ latitude, longitude });
+          const latitude = position.coords.latitude
+          const longitude = position.coords.longitude
+          resolve({ latitude, longitude })
         },
         (error) => {
-          reject(`Error getting geolocation: ${error.message}`);
+          reject(`Error getting geolocation: ${error.message}`)
         }
-      );
+      )
     } else {
-      reject("Geolocation is not supported by this browser.");
+      reject("Geolocation is not supported by this browser.")
     }
-  });
+  })
 }
 
 export default function WeatherWidget() {
+  const weatherWidget = useRef(null)
+
   useEffect(() => {
+    let disconnects = []
+
+    const weatherText = weatherWidget.current.querySelector(".weather-text")
+    const weatherTemp = weatherWidget.current.querySelector(".weather-temp")
+    
     getClientCoordinates()
       .then((coords) => {
         getWeather(coords.latitude, coords.longitude).then((weather) => {
-          console.log(weather);
-          document.querySelector(".weather-text").textContent = weather.weathercode;
-          document.querySelector(".weather-temp").textContent = `${weather.temperature} ºC`;
-        });
+
+          weatherText.textContent = weather.weathercode
+          weatherTemp.textContent = `${weather.temperature} ºC`
+        })
       })
       .catch((error) => {
-        console.error(error);
-      });
-  }, []);
+        console.error(error)
+      })
+
+    setInterval(getClientCoordinates, 10000)
+    disconnects.push(() => {
+      clearInterval(getClientCoordinates)
+    })
+
+    return (() => {
+      disconnects.forEach(disconnect => {
+        disconnect()
+      })
+    })
+  }, [])
 
   return (
-    <div className="widget-wrapper weather-widget">
+    <div ref={weatherWidget} className="widget-wrapper weather-widget">
       <div className="background-blur-widget" />
       <div className="content-weather">
         <div className="weather-status-wrapper">
@@ -101,5 +120,5 @@ export default function WeatherWidget() {
         </div>
       </div>
     </div>
-  );
+  )
 }

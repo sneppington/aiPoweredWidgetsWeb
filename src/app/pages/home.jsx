@@ -1,51 +1,51 @@
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import DashboardBrowse from "./dashboardBrowse";
+import { useEffect } from "react"
+import DashboardBrowse from "./dashboardBrowse"
 
 // Widgets
-import WeatherWidget from "../widgets/weather";
-import TemperatureWidget from "../widgets/temperature";
-import TodoList from "../widgets/todo";
+import WeatherWidget from "../widgets/weather"
+import TemperatureWidget from "../widgets/temperature"
+import TodoList from "../widgets/todo"
 
 export default function Home() {
   function randi(options) {
-    return Math.floor(Math.random() * options);
+    return Math.floor(Math.random() * options)
   }
 
   function generateShadesFromRgb(rgb, numberOfShades) {
-    const shades = [];
-    const [r, g, b] = parseRgbString(rgb);
+    const shades = []
+    const [r, g, b] = parseRgbString(rgb)
 
     for (let i = 0; i < numberOfShades; i++) {
       const factor = 1 - (i / numberOfShades);
       shades.push(`rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`);
     }
 
-    return shades;
+    return shades
   }
 
   function parseRgbString(rgb) {
-    const result = rgb.match(/\d+/g);
-    return result ? result.map(Number) : [0, 0, 0];
+    const result = rgb.match(/\d+/g)
+    return result ? result.map(Number) : [0, 0, 0]
   }
 
   function darkenColor(rgbColor) {
     // Extract RGB values from the input string
-    const rgb = rgbColor.match(/\d+/g);
-    if (!rgb) throw new Error("Invalid RGB color format");
+    const rgb = rgbColor.match(/\d+/g)
+    if (!rgb) throw new Error("Invalid RGB color format")
 
-    let r = parseInt(rgb[0]);
-    let g = parseInt(rgb[1]);
-    let b = parseInt(rgb[2]);
+    let r = parseInt(rgb[0])
+    let g = parseInt(rgb[1])
+    let b = parseInt(rgb[2])
 
     // Darken the color by reducing each component by 20%
-    r = Math.max(0, Math.floor(r * 0.8));
-    g = Math.max(0, Math.floor(g * 0.8));
-    b = Math.max(0, Math.floor(b * 0.8));
+    r = Math.max(0, Math.floor(r * 0.8))
+    g = Math.max(0, Math.floor(g * 0.8))
+    b = Math.max(0, Math.floor(b * 0.8))
 
     // Return the darker color as an RGB string
-    return `rgb(${r}, ${g}, ${b})`;
+    return `rgb(${r}, ${g}, ${b})`
   }
 
   let colors = [
@@ -56,96 +56,112 @@ export default function Home() {
     "rgb(255, 255, 255)", // White
     "rgb(106, 90, 205)", // Slate Blue
     "rgb(0, 206, 209)"   // Dark Turquoise
-  ];
+  ]
 
-  let colorTheme = colors[randi(7)];
-  let shades = generateShadesFromRgb(colorTheme, 15);
-  let darkerShade = darkenColor(colorTheme);
+  let colorTheme = colors[randi(7)]
+  let shades = generateShadesFromRgb(colorTheme, 15)
+  let darkerShade = darkenColor(colorTheme)
 
   useEffect(() => {
     let disconnects = []
 
-    document.documentElement.style.setProperty('--colorTheme', colorTheme); // Setting the theme color
+    document.documentElement.style.setProperty('--colorTheme', colorTheme) // Setting the theme color
 
     // Setting the header's color
-    const landingHeader = document.querySelector("#page-header");
+    const landingHeader = document.querySelector("#page-header")
 
-    landingHeader.style.background = `linear-gradient(to top, ${darkerShade}, rgba(0,0,0,0) 100%)`;
+    landingHeader.style.background = `linear-gradient(to top, ${darkerShade}, rgba(0,0,0,0) 100%)`
 
     // Adding other colors
-    document.querySelector("#AI-span").style.color = colorTheme;
+    document.querySelector("#AI-span").style.color = colorTheme
 
     // Adding random shapes to bg
-    const bgShapesWrapper = document.querySelector("#background-shapes-wrapper");
+    const bgShapesWrapper = document.querySelector("#background-shapes-wrapper")
 
     function addRandomShape() {
-      let shape = document.createElement("div");
+      let shape = document.createElement("div")
 
-      shape.style.backgroundColor = "white";
-      shape.style.transition = "background-color cubic-bezier(0.075, 0.82, 0.165, 1) 1s";
+      shape.style.backgroundColor = "white"
+      shape.style.transition = "background-color cubic-bezier(0.075, 0.82, 0.165, 1) 1s"
 
-      shape.style.position = "absolute";
-      shape.style.left = `${Math.random() * 100}%`;
-      shape.style.top = `${Math.random() * 100}%`;
+      shape.style.position = "absolute"
+      shape.style.left = `${Math.random() * 100}%`
+      shape.style.top = `${Math.random() * 100}%`
 
-      shape.style.height = `${Math.random() * 20 + 20}vw`;
-      shape.style.width = `${Math.random() * 20 + 20}vw`;
+      shape.style.height = `${Math.random() * 20 + 20}vw`
+      shape.style.width = `${Math.random() * 20 + 20}vw`
 
       if (randi(2) === 0) {
-        shape.style.borderRadius = "50%";
+        shape.style.borderRadius = "50%"
       } else {
-        shape.style.rotate = `${Math.random() * 90}deg`;
+        shape.style.rotate = `${Math.random() * 90}deg`
       }
 
-      bgShapesWrapper?.appendChild(shape);
+      bgShapesWrapper?.appendChild(shape)
 
-      shape.style.backgroundColor = shades[randi(15)]; // Shape needs to get white color first to then transition to theme color
+      shape.style.backgroundColor = shades[randi(15)] // Shape needs to get white color first to then transition to theme color
     }
 
     for (let i = 0; i < 10; i++) {
-      addRandomShape();
+      addRandomShape()
     }
 
-    // Register Login
-    let headerRegButton = document.querySelector("#page-header .register-button");
-    let registerButton = document.querySelector("#register .register-button");
+    // Register/Login
+    let headerRegButton = document.querySelector("#page-header .register-button")
+    let registerButton = document.querySelector("#register .register-button")
 
-    headerRegButton.addEventListener("click", () => {
-      document.querySelector("#landing-register-logIn-wrapper").style.transform = "translateX(-100vw)";
-      document.querySelector("#page-header .register-button-wrapper").style.transform = "translateY(calc(-100% - 50px))";
-      document.querySelector("#page-header .register-button-wrapper").style.width = "0px";
-      registerButton.style.transform = "translateY(0)";
+    let headerLogButton = document.querySelector("#page-header .login-button")
+    let loginButton = document.querySelector("#login .login-button")
 
-      headerLogButton.style.transform = "";
-      loginButton.style.transform = "translateY(30vh)";
-    });
+    function clickHeaderRegButton() {
+      document.querySelector("#landing-register-logIn-wrapper").style.transform = "translateX(-100vw)"
+      document.querySelector("#page-header .register-button-wrapper").style.transform = "translateY(calc(-100% - 50px))"
+      document.querySelector("#page-header .register-button-wrapper").style.width = "0px"
+      registerButton.style.transform = "translateY(0)"
 
-    let headerLogButton = document.querySelector("#page-header .login-button");
-    let loginButton = document.querySelector("#login .login-button");
+      headerLogButton.style.transform = ""
+      loginButton.style.transform = "translateY(30vh)"
+    }
 
-    headerLogButton.addEventListener("click", () => {
-      document.querySelector("#landing-register-logIn-wrapper").style.transform = "translateX(100vw)";
-      headerLogButton.style.transform = "translateY(calc(-100% - 50px))";
-      loginButton.style.transform = "translateY(0)";
-      document.querySelector("#page-header .register-button-wrapper").style.transform = "";
-      document.querySelector("#page-header .register-button-wrapper").style.width = "";
-      registerButton.style.transform = "translateY(30vh)";
-    });
+    function clickHeaderLogButton() {
+      document.querySelector("#landing-register-logIn-wrapper").style.transform = "translateX(100vw)"
+      headerLogButton.style.transform = "translateY(calc(-100% - 50px))"
+      loginButton.style.transform = "translateY(0)"
+      document.querySelector("#page-header .register-button-wrapper").style.transform = ""
+      document.querySelector("#page-header .register-button-wrapper").style.width = ""
+      registerButton.style.transform = "translateY(30vh)"
+    }
 
-    document.querySelector("#brand")?.addEventListener("click", () => {
-      document.querySelector("#landing-register-logIn-wrapper").style.transform = "";
-      document.querySelector("#page-header .register-button-wrapper").style.transform = "";
-      document.querySelector("#page-header .register-button-wrapper").style.width = "";
-      registerButton.style.transform = "translateY(30vh)";
+    function clickOnBrand() {
+      document.querySelector("#landing-register-logIn-wrapper").style.transform = ""
+      document.querySelector("#page-header .register-button-wrapper").style.transform = ""
+      document.querySelector("#page-header .register-button-wrapper").style.width = ""
+      registerButton.style.transform = "translateY(30vh)"
 
-      headerLogButton.style.transform = "";
-      loginButton.style.transform = "translateY(30vh)";
-    });
-  }, []);
+      headerLogButton.style.transform = ""
+      loginButton.style.transform = "translateY(30vh)"
+    }
+
+    headerRegButton.addEventListener("click", clickHeaderRegButton)
+    headerLogButton.addEventListener("click", clickHeaderLogButton)
+    document.querySelector("#brand")?.addEventListener("click", clickOnBrand)
+
+    disconnects.push(() => {
+      headerRegButton.removeEventListener("click", clickHeaderRegButton)
+      headerLogButton.removeEventListener("click", clickHeaderLogButton)
+      document.removeEventListener("#brand")?.addEventListener("click", clickOnBrand)
+    })
+
+    return (() => {
+      disconnects.forEach(disconnect => {
+        disconnect()
+      })
+    })
+  }, [])
 
   return (
     <>
-      <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet"></link>
+      <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400700&display=swap" rel="stylesheet"></link>
       <div id="background">
         <div id="background-shapes-wrapper"/>
         <div className="background-filter"/>
@@ -215,5 +231,5 @@ export default function Home() {
         </div>
       </div>
     </>
-  );
+  )
 }

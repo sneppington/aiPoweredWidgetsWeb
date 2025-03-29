@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react"
 
-import DashboardCard from "../components/dashboardCard";
+import DashboardCard from "../components/dashboardCard"
 
 export default function DashboardBrowse() {
 
@@ -11,38 +11,38 @@ export default function DashboardBrowse() {
   }
 
   function generateShadesFromRgb(rgb: string, numberOfShades: number): string[] {
-    const shades: string[] = [];
-    const [r, g, b] = parseRgbString(rgb);
+    const shades: string[] = []
+    const [r, g, b] = parseRgbString(rgb)
   
     for (let i = 0; i < numberOfShades; i++) {
-      const factor = 1 - (i / numberOfShades);
-      shades.push(`rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`);
+      const factor = 1 - (i / numberOfShades)
+      shades.push(`rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`)
     }
   
-    return shades;
+    return shades
   }
   
   function parseRgbString(rgb: string): number[] {
-    const result = rgb.match(/\d+/g);
-    return result ? result.map(Number) : [0, 0, 0];
+    const result = rgb.match(/\d+/g)
+    return result ? result.map(Number) : [0, 0, 0]
   }
 
   function darkenColor(rgbColor: string): string {
     // Extract RGB values from the input string
-    const rgb = rgbColor.match(/\d+/g);
-    if (!rgb) throw new Error("Invalid RGB color format");
+    const rgb = rgbColor.match(/\d+/g)
+    if (!rgb) throw new Error("Invalid RGB color format")
 
-    let r = parseInt(rgb[0]);
-    let g = parseInt(rgb[1]);
-    let b = parseInt(rgb[2]);
+    let r = parseInt(rgb[0])
+    let g = parseInt(rgb[1])
+    let b = parseInt(rgb[2])
 
     // Darken the color by reducing each component by 20%
-    r = Math.max(0, Math.floor(r * 0.8));
-    g = Math.max(0, Math.floor(g * 0.8));
-    b = Math.max(0, Math.floor(b * 0.8));
+    r = Math.max(0, Math.floor(r * 0.8))
+    g = Math.max(0, Math.floor(g * 0.8))
+    b = Math.max(0, Math.floor(b * 0.8))
 
     // Return the darker color as an RGB string
-    return `rgb(${r}, ${g}, ${b})`;
+    return `rgb(${r}, ${g}, ${b})`
   }
 
   const colors = [
@@ -56,12 +56,14 @@ export default function DashboardBrowse() {
   ]
 
   const colorTheme = useMemo(() => {
-    return colors[randi(7)];
-  }, []);
-  const shades = useMemo(() => generateShadesFromRgb(colorTheme, 15), [colorTheme]);
-  const darkerShade = useMemo(() => darkenColor(colorTheme), [colorTheme]);
+    return colors[randi(7)]
+  }, [])
+  const shades = useMemo(() => generateShadesFromRgb(colorTheme, 15), [colorTheme])
+  const darkerShade = useMemo(() => darkenColor(colorTheme), [colorTheme])
 
   useEffect(() => {
+    let disconnects: (() => void)[] = []
+
     document.documentElement.style.setProperty('--colorTheme', colorTheme) // Setting the theme color
 
     // Setting the header's color
@@ -79,7 +81,7 @@ export default function DashboardBrowse() {
     const bgShapesWrapper: HTMLElement = document.querySelector("#background-shapes-wrapper")!
 
     function addRandomShape() {
-      const shape = document.createElement("div");
+      const shape = document.createElement("div")
 
       shape.style.backgroundColor = "white"
       shape.style.transition = "background-color cubic-bezier(0.075, 0.82, 0.165, 1) 1s"
@@ -108,27 +110,37 @@ export default function DashboardBrowse() {
     
     // User profile UI
 
-    const pfp = document.querySelector("#profile-picture") as HTMLElement | null;
-    const pfpOptions = document.querySelector("#profile-options") as HTMLElement | null;
+    const pfp = document.querySelector("#profile-picture") as HTMLElement | null
+    const pfpOptions = document.querySelector("#profile-options") as HTMLElement | null
     
-    const userUIClickOutDetector = (event: MouseEvent) => {
+    function userUIClickOutDetector(event: MouseEvent) {
         if (pfp?.contains(event.target as Node)) {
-            return;
+            return
         }
-        pfpOptions?.style.setProperty("opacity", "0");
-        document.removeEventListener("click", userUIClickOutDetector);
-    };
+        pfpOptions?.style.setProperty("opacity", "0")
+        document.removeEventListener("click", userUIClickOutDetector)
+    }
+
+    function clickPfP() {
+      pfpOptions?.style.setProperty("opacity", "1")
+      document.addEventListener("click", userUIClickOutDetector)
+    }
+    pfp?.addEventListener("click", clickPfP)   
     
-    pfp?.addEventListener("click", () => {
-        pfpOptions?.style.setProperty("opacity", "1");
-        document.addEventListener("click", userUIClickOutDetector);
-    });    
+    disconnects.push(() => {
+      pfp?.removeEventListener("click", clickPfP) 
+    })
     
+    return (() => {
+      disconnects.forEach(disconnect => {
+        disconnect()
+      })
+    })
   }, [])
 
   return (
     <>
-      <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet"></link>
+      <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400700&display=swap" rel="stylesheet"></link>
       <div id="background">
         <div id="background-shapes-wrapper"/>
         <div className="background-filter"/>
@@ -166,5 +178,5 @@ export default function DashboardBrowse() {
         <DashboardCard/>
       </main>
     </>
-    );
+    )
 } 

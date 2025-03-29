@@ -1,21 +1,37 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react"
 
 export default function TodoList({ mode }) {
-  const todoWidget = useRef(null);
+  const todoWidget = useRef(null)
 
   useEffect(() => {
-    const todoElements = todoWidget.current.querySelectorAll(".todo-element");
+    let disconnects = []
+
+    const todoElements = todoWidget.current.querySelectorAll(".todo-element")
+
     todoElements.forEach((element) => {
-      element.addEventListener("click", () => {
-        element.style.height = "0px";
-        element.style.marginBottom = "0px";
+      function clickListElement() {
+        element.style.height = "0px"
+        element.style.marginBottom = "0px"
+  
         setTimeout(() => {
-          element.style.height = "";
-          element.style.marginBottom = "";
-        }, 3000);
-      });
-    });
-  }, []);
+          element.style.height = ""
+          element.style.marginBottom = ""
+        }, 3000)
+      }
+
+      element.addEventListener("click", clickListElement)
+
+      disconnects.push(() => {
+        element.removeEventListener("click", clickListElement)
+      })
+    })
+
+    return (() => {
+      disconnects.forEach(disconnect => {
+        disconnect()
+      })
+    })
+  }, [])
 
   switch (mode) {
     case "showoff":
@@ -42,7 +58,7 @@ export default function TodoList({ mode }) {
             </ul>
           </div>
         </div>
-      );
+      )
     default:
       return (
         <div ref={todoWidget} className="widget-wrapper">
@@ -67,6 +83,6 @@ export default function TodoList({ mode }) {
             </ul>
           </div>
         </div>
-      );
+      )
   }
 }
